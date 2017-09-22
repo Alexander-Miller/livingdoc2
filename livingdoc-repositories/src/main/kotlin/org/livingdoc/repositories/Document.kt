@@ -26,18 +26,25 @@ sealed class DocumentNode() {
     ) : DocumentNode()
 
     data class BulletList(
-            val bulletChar: String,
+            val bulletChar: String? = null,
             override val children: List<DocumentNode>
     ) : DocumentNode() {
         override fun toString() = "BulletList[bulletChar = $bulletChar]"
     }
 
-    data class OrderedList(
-            val startNumber: Int,
-            val delimiter: String,
+    data class OrderedMDList(
+            val startItem: String,
+            val delimiter: String? = null,
             override val children: List<DocumentNode>
     ) : DocumentNode() {
-        override fun toString() = "OrderedList[startNumber = $startNumber, delimiter = $delimiter]"
+        override fun toString() = "OrderedMDList[startNumber = $startItem, delimiter = $delimiter]"
+    }
+
+    data class OrderedHtmlList(
+            val type: String = "1",
+            override val children: List<DocumentNode>
+    ) : DocumentNode() {
+        override fun toString() = "OrderedHtmlList[type = $type]"
     }
 
     data class IndentedCodeBlock(
@@ -46,11 +53,10 @@ sealed class DocumentNode() {
     ) : DocumentNode()
 
     data class ListItem(
-            val openingMarker: String,
-            val markerSuffix: String,
+            val openingMarker: String? = null,
             override val children: List<DocumentNode>
     ) : DocumentNode() {
-        override fun toString() = "ListItem[openingMarker = $openingMarker, markerSuffix = $markerSuffix]"
+        override fun toString() = "ListItem[openingMarker = $openingMarker]"
     }
 
     data class CodeBlock(

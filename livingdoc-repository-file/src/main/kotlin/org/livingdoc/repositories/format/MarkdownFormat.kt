@@ -39,9 +39,9 @@ fun map(nodes: Iterable<Node>): List<DocumentNode> {
             is MDBulletList ->
                 DocumentNode.BulletList(node.openingMarker.toString(), map(node.children))
             is MDOrderedList ->
-                DocumentNode.OrderedList(node.startNumber, node.delimiter.toString(), map(node.children))
+                DocumentNode.OrderedMDList(node.startNumber.toString(), node.delimiter.toString(), map(node.children))
             is MDListItem ->
-                DocumentNode.ListItem(node.openingMarker.toString(), node.markerSuffix.toString(), map(node.children))
+                DocumentNode.ListItem(node.openingMarker.toString(), map(node.children))
 //            is MDText ->
 //                DocumentNode.Text(node.chars.toString(), map(node.children))
             is MDIndentedCodeBlock ->
