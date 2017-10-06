@@ -6,6 +6,7 @@ import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.options.MutableDataSet
 import org.livingdoc.repositories.DocumentNode
 import java.io.File
+import java.util.ArrayList
 import java.util.Arrays.asList
 import com.vladsch.flexmark.ast.BulletList as MDBulletList
 import com.vladsch.flexmark.ast.FencedCodeBlock as MDFencedCodeBlock
@@ -15,6 +16,12 @@ import com.vladsch.flexmark.ast.ListItem as MDListItem
 import com.vladsch.flexmark.ast.OrderedList as MDOrderedList
 import com.vladsch.flexmark.ast.Paragraph as MDParagraph
 import com.vladsch.flexmark.ast.Text as MDText
+import com.vladsch.flexmark.ext.tables.TableBlock as MDTableBlock
+import com.vladsch.flexmark.ext.tables.TableHead as MDTableHead
+import com.vladsch.flexmark.ext.tables.TableRow as MDTableRow
+import com.vladsch.flexmark.ext.tables.TableCell as MDTableCell
+import com.vladsch.flexmark.ext.tables.TableBody as MDTableBody
+import com.vladsch.flexmark.ext.tables.TableSeparator as MDTableSeparator
 
 
 //fun show(seq: BasedSequence) {
@@ -28,6 +35,12 @@ import com.vladsch.flexmark.ast.Text as MDText
 //        show(it)
 //    }
 //}
+
+
+fun mdTableCell2TableCell(mdTableCell:MDTableCell) = DocumentNode.TableCell(mdTableCell.text.toString(), ArrayList())
+
+fun mdTableRow2TableRow(mdTableRow: MDTableRow) = DocumentNode.TableRow(mdTableRow.children.filter { it is MDTableCell }.map { mdTableCell2TableCell(it as MDTableCell) }, ArrayList())
+
 
 fun map(nodes: Iterable<Node>): List<DocumentNode> {
     return nodes.map { node ->
@@ -48,10 +61,35 @@ fun map(nodes: Iterable<Node>): List<DocumentNode> {
                 DocumentNode.IndentedCodeBlock(node.chars.toString(), map(node.children))
             is MDFencedCodeBlock ->
                 DocumentNode.CodeBlock(node.contentChars.toString(), node.info.toString(), map(node.children))
+            is MDTableBlock -> {
+                val childIterator = node.children.iterator()
+                val resultRows = mutableListOf<DocumentNode.TableRow>()
+                val firstChild = childIterator.next()
+                if (firstChild is MDTableHead) {
+                    val headsFirstChild = firstChild.children.first()
+                    if (headsFirstChild is MDTableRow) {
+                        resultRows.add(mdTableRow2TableRow(headsFirstChild))
+                    }
+                }
+
+                childIterator.remove()
+
+                val bodyRows = childIterator.forEach {
+                    when(it) {
+                        is MDTableBody ->
+                            it.children
+                                    .filter { it is MDTableRow }
+                                    .map { it as MDTableRow }
+                                    .forEach { resultRows.add(mdTableRow2TableRow(it)) }
+
+                    }
+                }
+                DocumentNode.Table(resultRows, ArrayList())
+            }
             else ->
                 DocumentNode.Noop(node.toString(), map(node.children))
         }
-    }.filter { it !is DocumentNode.Noop }
+    }//.filter { it !is DocumentNode.Noop }
 }
 
 

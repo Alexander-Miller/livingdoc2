@@ -23,7 +23,9 @@ sealed class DocumentNode() {
     data class Text(
             val text: String,
             override val children: List<DocumentNode>
-    ) : DocumentNode()
+    ) : DocumentNode() {
+        override fun toString() = "Text[text = $text]"
+    }
 
     data class BulletList(
             val bulletChar: String? = null,
@@ -67,6 +69,26 @@ sealed class DocumentNode() {
         override fun toString() = "CodeBlock[code = $code, info = $info]"
     }
 
+    data class Table(
+            val rows: List<TableRow>,
+            override val children: List<DocumentNode>
+    ) : DocumentNode() {
+        override fun toString() = "Table[rows = ${rows.map { it.toString() }.joinToString(separator = "\n")}]"
+    }
+
+    data class TableRow(
+            val cells: List<TableCell>,
+            override val children: List<DocumentNode>
+    ) : DocumentNode() {
+        override fun toString() = "TableRow[cells = ${cells.map { it.toString() }.joinToString(separator="|")}]"
+    }
+
+    data class TableCell(
+            val text: String,
+            override val children: List<DocumentNode>
+    ) : DocumentNode() {
+        override fun toString() = "TableCell[text = $text]"
+    }
 
     data class Noop(
             val name: String,
